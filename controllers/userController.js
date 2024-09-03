@@ -1,5 +1,5 @@
 const pool = require('../db'); // Import the database pool from your database configuration
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 
 // Fetch and render the users page
 const getUsers = async (req, res) => {
