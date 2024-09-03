@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMS</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <!-- Material Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <!-- Custom Stylesheet -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <div class="container-fluid vh-100 p-0">
+        <div class="row g-0 h-100">
+            <div class="col-auto w-5">
+
+                <!-- Sidebar Navigation -->
+                <div id="sidebar" class="bg-primary d-flex flex-column text-center align-items-center p-3 h-100">
+                    <div class="icon text-white mt-2 mb-5 d-flex flex-column align-items-center" title="Omni Logo" aria-label="Omni Logo">
+                        <span class="material-icons fs-1">donut_small</span>
+                        <div>OMNI</div>
+                    </div>              
+                    <div class="icon text-white mb-4" title="Email" aria-label="Email">
+                        <span class="material-icons">email</span>
+                    </div>
+                    <div class="icon text-white mb-4" title="Chat" aria-label="Chat">
+                        <span class="material-icons">chat</span>
+                    </div>
+                    <div class="icon text-white mb-4" title="SMS" aria-label="SMS">
+                        <span class="material-icons">smartphone</span>
+                    </div>
+                    <div class="icon text-white mb-4" title="Call" aria-label="Call">
+                        <span class="material-icons">call</span>
+                    </div>
+                    <div class="mt-auto icon text-white mt-4" title="Settings" aria-label="Settings">
+                        <span class="material-icons">settings</span>
+                    </div>
+                </div>
+
+            </div>            
+
+            
+            <div class="col-3">
+                <!-- Collapsible Inbox -->
+                <div id="inbox" class="inbox shadow h-100">
+                    <!-- Unread Message -->
+                    <div class="inboxMessage p-2 border-bottom d-flex align-items-start">
+                        <img src="https://picsum.photos/50" alt="User Image" class="img-circle m-2">
+                        <div class="flex-grow-1 ms-2">
+                            <h4 class="name font-weight-bold">Name 1</h4>
+                            <div class="mobile-number small">+123 456 7890</div>
+                            <div class="excerpt small">This is a text excerpt from the message...</div>
+                        </div>
+                        <div class="date-time text-end">September 3, 2024<br>12:30 PM</div>
+                    </div>
+                    <!-- Read Message -->
+                    <div class="inboxMessage p-2 border-bottom d-flex align-items-start read">
+                        <img src="https://picsum.photos/50" alt="User Image" class="img-circle m-2">
+                        <div class="flex-grow-1 ms-2">
+                            <h4 class="name">Name 2</h4>
+                            <div class="mobile-number small">+098 765 4321</div>
+                            <div class="excerpt small">This is another text excerpt from the message...</div>
+                        </div>
+                        <div class="date-time text-end">September 2, 2024<br>1:45 PM</div>
+                    </div>
+                </div>
+            </div>
+            
+
+            <div class="col-8">
+                <!-- Chat Container -->
+                <div id="chatContainer" class="d-flex flex-column h-100 p-3">
+                    <h1>SMS</h1>
+                    <div id="chatbox" class="border p-2 mb-3 flex-grow-1" style="overflow-y: scroll;"></div>
+                    <div id="inputArea" class="d-flex">
+                        <input type="text" id="toInput" class="form-control me-2" placeholder="Recipient Number (e.g. +1234567890)" />
+                        <input type="text" id="messageInput" class="form-control me-2" placeholder="Type your message..." />
+                        <input type="file" id="fileInput" class="me-2" />
+                        <button id="sendButton" class="btn btn-primary">Send</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS -->
+    <script src="script.js"></script>
+</body>
+</html>

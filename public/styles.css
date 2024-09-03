@@ -1,0 +1,81 @@
+#inbox {
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    width: 33.33%; /* One-third of the width */
+    position: absolute; /* Absolute positioning */
+    left: 60px; /* Align with the sidebar */
+    top: 0; /* Start from the top */
+    height: 100vh; /* Full height */
+    z-index: 1000; /* Ensure it's above other content */
+    overflow-y: auto; /* Allow scrolling for long lists */
+    display: block;
+}
+
+.inboxMessage {
+    padding: 10px;
+    border-bottom: 1px solid #ccc;
+}
+
+.inboxMessage:last-child {
+    border-bottom: none; /* Remove border for last item */
+}
+
+.icon {
+    width: 40px; /* Icon size */
+    height: 40px; /* Icon size */
+    margin: 10px 0; /* Margin between icons */
+    cursor: pointer; /* Change cursor on hover */
+}
+
+.icon:hover {
+    opacity: 0.8; /* Slightly fade on hover */
+}
+
+
+/* Ensure images are contained within the column width */
+.img-circle {
+    border-radius: 50%;
+    width: 50px; /* Adjust size as needed */
+    height: 50px; /* Adjust size as needed */
+    object-fit: cover;
+}
+
+/* Ensure inbox messages fit within the column width */
+.inboxMessage {
+    display: flex;
+    align-items: flex-start;
+    overflow: hidden; /* Prevent content overflow */
+    width: 100%; /* Ensure messages use full width of the column */
+}
+
+/* Ensure text does not overflow */
+.name {
+    font-size: 1.25rem; /* Adjust size as needed */
+    font-weight: bold;
+    margin-bottom: 0.25rem;
+    overflow: hidden; /* Hide overflowing text */
+    text-overflow: ellipsis; /* Add ellipsis for overflow text */
+    white-space: nowrap; /* Prevent line breaks */
+}
+
+.mobile-number,
+.excerpt {
+    font-size: 0.75rem; /* Smaller font size like <small> */
+    color: #6c757d; /* Bootstrap secondary text color */
+}
+
+.excerpt {
+    color: #343a40; /* Bootstrap dark text color */
+    overflow: hidden; /* Hide overflowing text */
+    text-overflow: ellipsis; /* Add ellipsis for overflow text */
+    white-space: nowrap; /* Prevent line breaks */
+}
+
+/* Date and time styling */
+.date-time {
+    font-size: 0.75rem;
+    color: #adb5bd; /* Bootstrap muted text color */
+    text-align: right;
+}
+

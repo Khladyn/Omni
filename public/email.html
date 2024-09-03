@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Email Inbox</title>
+    <style>
+        /* Basic styles for the email interface */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+        }
+        button {
+            padding: 10px 15px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 10px 0;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .loading {
+            display: none; /* Initially hidden */
+            text-align: center;
+            font-size: 20px;
+            color: #007BFF;
+        }
+        .email-list {
+            margin-top: 20px;
+        }
+        .email-item {
+            border-bottom: 1px solid #eee;
+            padding: 10px 0;
+            cursor: pointer;
+        }
+        .email-item:last-child {
+            border-bottom: none;
+        }
+        .email-subject {
+            font-weight: bold;
+        }
+        .email-from {
+            color: #555;
+        }
+        .email-excerpt {
+            color: #777;
+        }
+        .email-full {
+            display: none; /* Initially hidden */
+            margin-top: 10px;
+            border-top: 1px solid #eee;
+            padding-top: 10px;
+        }
+
+        /* Modal styles */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 1; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgb(0,0,0); /* Fallback color */
+            background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+            padding-top: 60px;
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto; /* 15% from the top and centered */
+            padding: 20px;
+            border: 1px solid #888;
+            width: 90%; /* Could be more or less, depending on screen size */
+            max-width: 600px; /* Max width of the modal */
+            border-radius: 5px;
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Email Inbox</h1>
+        <button id="refreshButton">Refresh</button>
+        <button id="createEmailButton">Create Email</button>
+        <div class="loading" id="loadingMessage">Loading emails...</div> <!-- Loading message -->
+        <div class="email-list" id="emailList"></div> <!-- Container for email list -->
+    </div>
+
+    <!-- The Modal -->
+    <div id="emailModal" class="modal">
+        <div class="modal-content">
+            <span class="close" id="modalClose">&times;</span>
+            <h2>Create Email</h2>
+            <form id="emailForm" enctype="multipart/form-data">
+                <input type="email" name="to" placeholder="Recipient" required>
+                <input type="text" name="cc" placeholder="CC">
+                <input type="text" name="bcc" placeholder="BCC">
+                <input type="text" name="subject" placeholder="Subject" required>
+                <textarea name="text" placeholder="Email body" required></textarea>
+                <input type="file" name="attachments" multiple>
+                <button type="submit">Send Email</button>
+            </form>
+            <div class="loading" id="loadingEmailMessage">Sending email...</div> <!-- Loading message -->
+        </div>
+    </div>
+
+    <script>
+        const loadingMessage = document.getElementById('loadingMessage');
+        const emailList = document.getElementById('emailList');
+        const emailModal = document.getElementById('emailModal');
+        const modalClose = document.getElementById('modalClose');
+        const loadingEmailMessage = document.getElementById('loadingEmailMessage');
+
+        // Function to fetch and display emails
+        const fetchEmails = async () => {
+            loadingMessage.style.display = 'block'; // Show loading message
+            const response = await fetch('/fetch-emails');
+            const emails = await response.json();
+            emailList.innerHTML = ''; // Clear existing emails
+            loadingMessage.style.display = 'none'; // Hide loading message
+
+            // Check if emails are returned
+            if (emails.length === 0) {
+                emailList.innerHTML = '<div>No emails found.</div>';
+                return;
+            }
+
+            emails.forEach(email => {
+                const emailItem = document.createElement('div');
+                emailItem.className = 'email-item';
+                emailItem.innerHTML = `
+                    <div class="email-subject">${email.subject}</div>
+                    <div class="email-from">${email.from}</div>
+                    <div class="email-excerpt">${email.body.substring(0, 100)}...</div>
+                    <div class="email-full">${email.body}</div>
+                `;
+
+                // Toggle full email view on click
+                emailItem.addEventListener('click', () => {
+                    const fullEmail = emailItem.querySelector('.email-full');
+                    fullEmail.style.display = fullEmail.style.display === 'none' ? 'block' : 'none';
+                });
+
+                emailList.appendChild(emailItem);
+            });
+        };
+
+        // Fetch emails on page load
+        window.onload = fetchEmails;
+
+        // Attach refresh button click event
+        document.getElementById('refreshButton').addEventListener('click', fetchEmails);
+
+        // Attach create email button event
+        document.getElementById('createEmailButton').addEventListener('click', () => {
+            emailModal.style.display = 'block'; // Show the modal
+        });
+
+        // Close the modal when the user clicks on <span> (x)
+        modalClose.onclick = function() {
+            emailModal.style.display = 'none';
+        };
+
+        // Close the modal when clicking outside of the modal content
+        window.onclick = function(event) {
+            if (event.target === emailModal) {
+                emailModal.style.display = 'none';
+            }
+        };
+
+        // Handle email form submission
+        document.getElementById('emailForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            // Show the loading message
+            loadingEmailMessage.style.display = 'block';
+
+            const formData = new FormData(e.target);
+            try {
+                const response = await fetch('/send-email', {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                const message = await response.text();
+                alert(message);
+                emailModal.style.display = 'none'; // Close modal after sending
+            } catch (error) {
+                alert('Error sending email: ' + error);
+            } finally {
+                // Hide the loading message after the request is complete
+                loadingEmailMessage.style.display = 'none';
+                e.target.reset(); // Reset the form
+                fetchEmails(); // Fetch emails after sending
+            }
+        });
+    </script>
+</body>
+</html>

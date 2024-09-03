@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Make a Call</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f4f4f4;
+        }
+        h1 {
+            text-align: center;
+        }
+        .keypad {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .keypad button {
+            margin: 5px;
+            padding: 20px;
+            font-size: 20px;
+            cursor: pointer;
+        }
+        #phoneNumber {
+            width: 200px;
+            padding: 10px;
+            font-size: 20px;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        #makeCallButton {
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+        }
+        #makeCallButton:hover {
+            background-color: #0056b3;
+        }
+        #callInfo {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #e7f3fe;
+            border: 1px solid #b3d7ff;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Make a Call</h1>
+    <div class="keypad">
+        <input type="text" id="phoneNumber" placeholder="Enter phone number" />
+        <div>
+            <button onclick="appendNumber('1')">1</button>
+            <button onclick="appendNumber('2')">2</button>
+            <button onclick="appendNumber('3')">3</button>
+        </div>
+        <div>
+            <button onclick="appendNumber('4')">4</button>
+            <button onclick="appendNumber('5')">5</button>
+            <button onclick="appendNumber('6')">6</button>
+        </div>
+        <div>
+            <button onclick="appendNumber('7')">7</button>
+            <button onclick="appendNumber('8')">8</button>
+            <button onclick="appendNumber('9')">9</button>
+        </div>
+        <div>
+            <button onclick="appendNumber('*')">*</button>
+            <button onclick="appendNumber('0')">0</button>
+            <button onclick="appendNumber('#')">#</button>
+        </div>
+        <button id="makeCallButton" onclick="makeCall()">Make Call</button>
+    </div>
+
+    <div id="callInfo"></div> <!-- Div to display incoming call info -->
+
+    <script>
+        // Create WebSocket connection
+        const socket = new WebSocket(`wss://${window.location.host}`);
+    
+        // Listen for messages
+        socket.addEventListener('message', function (event) {
+
+            console.log("websocket triggered");
+            
+            const callInfo = JSON.parse(event.data);
+            console.log(callInfo);
+            const callInfoDiv = document.getElementById('callInfo');
+            callInfoDiv.innerHTML = `
+                <strong>Call Received:</strong><br>
+                Caller: ${callInfo.Caller}<br>
+                Call SID: ${callInfo.CallSid}<br>
+                Direction: ${callInfo.Direction}<br>
+                Status: ${callInfo.CallStatus}
+            `;
+        });
+    
+        function appendNumber(number) {
+            const phoneNumberInput = document.getElementById('phoneNumber');
+            phoneNumberInput.value += number;
+        }
+    
+        function makeCall() {
+            const phoneNumber = document.getElementById('phoneNumber').value;
+            if (!phoneNumber) {
+                alert('Please enter a phone number.');
+                return;
+            }
+    
+            fetch('/make-call', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `to=${encodeURIComponent(phoneNumber)}`,
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.text();
+                }
+                throw new Error('Failed to make call');
+            })
+            .then(data => {
+                alert(data); // Notify user that the call was initiated
+            })
+            .catch(error => {
+                alert('Error: ' + error.message);
+            });
+        }
+    </script>
+</body>
+</html>

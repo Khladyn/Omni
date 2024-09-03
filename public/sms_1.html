@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat Interface</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            display: grid; /* Use grid layout for the body */
+            grid-template-columns: 60px 1fr; /* Sidebar and chat panel */
+            height: 100vh; /* Full height of the viewport */
+        }
+        /* Sidebar styles */
+        #sidebar {
+            background-color: #007BFF; /* Sidebar background color */
+            display: flex;
+            flex-direction: column;
+            align-items: center; /* Center items horizontally */
+            padding: 10px 0; /* Padding on top and bottom */
+            height: 100vh; /* Full height */
+        }
+        .icon {
+            width: 40px; /* Icon size */
+            height: 40px; /* Icon size */
+            margin: 10px 0; /* Margin between icons */
+            color: white; /* Icon color */
+            cursor: pointer; /* Change cursor on hover */
+        }
+        .icon:hover {
+            opacity: 0.8; /* Slightly fade on hover */
+        }
+        /* Inbox styles */
+        #inbox {
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            width: 33.33%; /* One-third of the width */
+            position: absolute; /* Absolute positioning */
+            left: 60px; /* Align with the sidebar */
+            top: 0; /* Start from the top */
+            height: 100vh; /* Full height */
+            display: none; /* Initially hidden */
+            z-index: 1000; /* Ensure it's above other content */
+            overflow-y: auto; /* Allow scrolling for long lists */
+        }
+        #inboxButton {
+            margin-top: 10px;
+            color: white; /* Text color for the inbox button */
+            cursor: pointer; /* Change cursor on hover */
+        }
+        .inboxMessage {
+            padding: 10px;
+            border-bottom: 1px solid #ccc;
+        }
+        .inboxMessage:last-child {
+            border-bottom: none; /* Remove border for last item */
+        }
+        #chatContainer {
+            padding: 20px; /* Padding around the chat container */
+            position: relative; /* Relative positioning for the chat container */
+            transition: margin-left 0.3s; /* Smooth transition for margin */
+        }
+        #chatbox {
+            border: 1px solid #ccc;
+            height: 400px;
+            overflow-y: scroll;
+            padding: 10px;
+            background-color: #fff;
+            margin-bottom: 10px;
+        }
+        .message {
+            margin: 5px 0;
+            padding: 10px;
+            border-radius: 10px;
+            max-width: fit-content; /* Limit the width of the bubbles */
+            word-wrap: break-word; /* Allow long words to break */
+        }
+        .sent {
+            text-align: right;
+            background-color: #007BFF; /* Blue background for sent messages */
+            color: white; /* White text for sent messages */
+            margin-left: auto; /* Align to the right */
+        }
+        .received {
+            text-align: left;
+            background-color: #e0e0e0; /* Grey background for received messages */
+            color: black; /* Black text for received messages */
+            margin-right: auto; /* Align to the left */
+        }
+        #inputArea {
+            display: flex;
+            margin-top: 10px;
+        }
+        #toInput {
+            width: 150px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+        #messageInput {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        #sendButton {
+            padding: 10px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        #sendButton:hover {
+            background-color: #0056b3;
+        }
+        #fileInput {
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar Navigation -->
+    <div id="sidebar">
+        <div class="icon" title="Email">📧</div>
+        <div class="icon" title="Chat">💬</div>
+        <div class="icon" title="SMS">📱</div>
+        <div class="icon" title="Call">📞</div>
+        <div id="inboxButton" class="icon" title="Inbox">📥</div>
+        
+        <!-- Collapsible Inbox -->
+        <div id="inbox">
+            <div class="inboxMessage">Message 1</div>
+            <div class="inboxMessage">Message 2</div>
+            <div class="inboxMessage">Message 3</div>
+        </div>
+    </div>
+
+    <!-- Chat Container -->
+    <div id="chatContainer">
+        <h1>Chat Interface</h1>
+        <div id="chatbox"></div>
+        <div id="inputArea">
+            <input type="text" id="toInput" placeholder="Recipient Number (e.g. +1234567890)" />
+            <input type="text" id="messageInput" placeholder="Type your message..." />
+            <input type="file" id="fileInput" />
+            <button id="sendButton">Send</button>
+        </div>
+    </div>
+
+    <script>
+        const chatbox = document.getElementById('chatbox');
+        const toInput = document.getElementById('toInput');
+        const messageInput = document.getElementById('messageInput');
+        const sendButton = document.getElementById('sendButton');
+        const fileInput = document.getElementById('fileInput');
+        const inboxButton = document.getElementById('inboxButton');
+        const inbox = document.getElementById('inbox');
+        const chatContainer = document.getElementById('chatContainer');
+
+        // Function to send a message
+        function sendMessage() {
+            const recipientNumber = toInput.value;
+            const message = messageInput.value;
+            const file = fileInput.files[0];
+
+            if (!recipientNumber || !/^\+?[1-9]\d{1,14}$/.test(recipientNumber)) {
+                alert('Please enter a valid recipient number in E.164 format.');
+                return;
+            }
+
+            if (!message && !file) {
+                alert('Please enter a message or select a file.');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('to', recipientNumber);
+            formData.append('message', message);
+            if (file) {
+                formData.append('file', file);
+            }
+
+            // Send the message using AJAX
+            fetch('/send-sms', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json()) 
+            .then(data => {
+                console.log(data);
+                const messageType = 'sent'; // Assuming message type for sent messages
+                displayMessage(data.message, messageType, data.fileUrl); // Use the message and fileUrl
+                // Clear inputs
+                messageInput.value = '';
+                fileInput.value = '';
+                toInput.value = '';
+            })
+            .catch(error => {
+                console.error('Error sending message:', error);
+            });
+        }
+
+        // Function to display messages in the chatbox
+        function displayMessage(message, type, fileUrl = null) {
+            const messageElement = document.createElement('div');
+            messageElement.classList.add('message', type);
+
+            // Create a message content element
+            const messageContent = document.createElement('div');
+            messageContent.innerText = message; // Set the text of the message
+            // Append the message content to the message element
+            messageElement.appendChild(messageContent);
+
+            // Check if a file URL is provided and create the appropriate preview
+            if (fileUrl) {
+                let fileElement;
+
+                // Determine the file type and create the appropriate preview
+                const fileExtension = fileUrl.split('.').pop().toLowerCase();
+                if (['jpg', 'jpeg', 'png', 'gif'].includes(fileExtension)) {
+                    // Image file
+                    fileElement = document.createElement('img');
+                    fileElement.src = fileUrl;
+                    fileElement.alt = 'Image preview';
+                    fileElement.style.maxWidth = '200px'; // Limit image size
+                    fileElement.style.borderRadius = '10px';
+                    fileElement.style.marginTop = '5px';
+                } else if (['mp3', 'wav', 'ogg'].includes(fileExtension)) {
+                    // Audio file
+                    fileElement = document.createElement('audio');
+                    fileElement.controls = true; // Show audio controls
+                    fileElement.src = fileUrl;
+                    fileElement.style.marginTop = '5px';
+                } else if (['mp4', 'webm', 'ogg'].includes(fileExtension)) {
+                    // Video file
+                    fileElement = document.createElement('video');
+                    fileElement.controls = true; // Show video controls
+                    fileElement.src = fileUrl;
+                    fileElement.style.maxWidth = '200px'; // Limit video size
+                    fileElement.style.borderRadius = '10px';
+                    fileElement.style.marginTop = '5px';
+                }
+                
+                // Append the file preview element to the message element
+                if (fileElement) {
+                    messageElement.appendChild(fileElement);
+                }
+            }
+
+            chatbox.appendChild(messageElement);
+            chatbox.scrollTop = chatbox.scrollHeight; // Scroll to the bottom
+        }
+
+        // A Set to keep track of displayed message IDs
+        const displayedMessageIds = new Set();
+
+        function fetchMessages() {
+            fetch('/fetch-sms') // This endpoint needs to be implemented on the server
+                .then(response => response.json())
+                .then(messages => {
+                    messages.forEach(msg => {
+                        // Check if the message ID has already been displayed
+                        if (!displayedMessageIds.has(msg.id) && msg.type == 'received') {
+                            displayMessage(msg.body, 'received');
+                            // Add the message ID to the set
+                            displayedMessageIds.add(msg.id);
+                        }
+                    });
+                })
+                .catch(error => {
+                    console.error('Error fetching messages:', error);
+                });
+        }
+
+        // Poll for new messages every 2 seconds
+        setInterval(fetchMessages, 2000);
+
+        // Event listener for the send button
+        sendButton.addEventListener('click', sendMessage);
+
+        // Event listener for the inbox button
+        inboxButton.addEventListener('click', () => {
+            // Toggle the display of the inbox
+            if (inbox.style.display === 'none' || inbox.style.display === '') {
+                inbox.style.display = 'block'; // Show inbox
+                chatContainer.style.marginLeft = '33.33%'; // Push chat container
+            } else {
+                inbox.style.display = 'none'; // Hide inbox
+                chatContainer.style.marginLeft = '0'; // Reset margin
+            }
+        });
+
+    </script>
+</body>
+</html>
