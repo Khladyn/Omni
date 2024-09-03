@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard with Charts</title>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    .dashboard-item {
+      background-color: rgba(255, 255, 255, 0.1); /* Transparent white */
+      border: 3px solid white;
+      position: relative;
+    }
+    .dashboard-item canvas {
+      max-height: 125px; /* Adjust as needed */
+    }
+    .stats-container {
+      display: flex;
+      justify-content: space-between;
+    }
+    .stats-container p {
+      margin: 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container w-100 h-100 d-flex flex-column">
+    <h3 class="mb-4 text-white">
+        <span class="material-icons text-white me-2">waving_hand</span>
+        Welcome back, <%= user.first_name %>!
+    </h3>
+    
+    <div class="row flex-grow-1 d-flex">
+      <!-- Dashboard Items (Two-thirds of the screen) -->
+      <div class="col-md-8 d-flex flex-column">
+        <div class="row g-4 flex-grow-1">
+          <div class="col-md-6">
+            <div class="dashboard-item text-white p-3 rounded h-100 d-flex flex-column justify-content-between shadow-lg">
+              <canvas id="callsChart" class="pb-2"></canvas>
+              <h5 class="d-flex align-items-center mb-3 mt-auto">
+                <span class="material-icons text-white me-2">phone</span>
+                Calls
+              </h5>
+              <div class="stats-container">
+                <p>Inbound: <span id="inbound-calls">0</span></p>
+                <p>Outbound: <span id="outbound-calls">0</span></p>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="dashboard-item text-white p-3 rounded h-100 d-flex flex-column justify-content-between shadow-lg">
+              <canvas id="emailsChart" class="pb-2"></canvas>
+              <h5 class="d-flex align-items-center mb-3 mt-auto">
+                <span class="material-icons text-white me-2">email</span>
+                Emails
+              </h5>
+              <div class="stats-container">
+                <p>Sent: <span id="emails-sent">0</span></p>
+                <p>Received: <span id="emails-received">0</span></p>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="dashboard-item text-white p-3 rounded h-100 d-flex flex-column justify-content-between shadow-lg">
+              <canvas id="chatChart" class="pb-2"></canvas>
+              <h5 class="d-flex align-items-center mb-3 mt-auto">
+                <span class="material-icons text-white me-2">chat</span>
+                Chat
+              </h5>
+              <div class="stats-container">
+                <p>Sent: <span id="chat-sent">0</span></p>
+                <p>Received: <span id="chat-received">0</span></p>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="dashboard-item text-white p-3 rounded h-100 d-flex flex-column justify-content-between shadow-lg">
+              <canvas id="smsChart" class="pb-2"></canvas>
+              <h5 class="d-flex align-items-center mb-3 mt-auto">
+                <span class="material-icons text-white me-2">smartphone</span>
+                SMS
+              </h5>
+              <div class="stats-container">
+                <p>Sent: <span id="sms-sent">0</span></p>
+                <p>Received: <span id="sms-received">0</span></p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+  
+      <!-- Recent Interactions (One-third of the screen) -->
+      <div class="col-md-4 d-flex justify-content-center">
+        <div class="recent-interactions p-3 rounded shadow-sm w-100">
+          <h2>Recent Interactions</h2>
+          <ul class="list-unstyled">
+            <li>Interaction 1: Details about the interaction...</li>
+            <li>Interaction 2: Details about the interaction...</li>
+            <li>Interaction 3: Details about the interaction...</li>
+            <li>Interaction 4: Details about the interaction...</li>
+            <!-- More recent interactions -->
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    // Data for charts
+    const data = {
+      labels: ['January', 'February', 'March', 'April', 'May', 'June', 'July'],
+      datasets: [{
+        label: 'Data',
+        data: [10, 20, 15, 25, 30, 20, 35],
+        borderColor: 'rgba(255, 255, 255, 0.8)',
+        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+        fill: true,
+        tension: 0.1
+      }]
+    };
+
+    // Create charts
+    const ctxCalls = document.getElementById('callsChart').getContext('2d');
+    const ctxEmails = document.getElementById('emailsChart').getContext('2d');
+    const ctxChat = document.getElementById('chatChart').getContext('2d');
+    const ctxSms = document.getElementById('smsChart').getContext('2d');
+
+    new Chart(ctxCalls, {
+      type: 'line',
+      data: data,
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          x: {
+            display: false
+          },
+          y: {
+            display: false
+          }
+        }
+      }
+    });
+
+    new Chart(ctxEmails, {
+      type: 'line',
+      data: data,
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          x: {
+            display: false
+          },
+          y: {
+            display: false
+          }
+        }
+      }
+    });
+
+    new Chart(ctxChat, {
+      type: 'line',
+      data: data,
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          x: {
+            display: false
+          },
+          y: {
+            display: false
+          }
+        }
+      }
+    });
+
+    new Chart(ctxSms, {
+      type: 'line',
+      data: data,
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          x: {
+            display: false
+          },
+          y: {
+            display: false
+          }
+        }
+      }
+    });
+  </script>
+</body>
+</html>

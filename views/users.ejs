@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Users List</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+  <!-- DataTables CSS -->
+  <link href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css" rel="stylesheet">
+  <!-- Material Icons -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <!-- Custom CSS -->
+  <style>
+    .table-custom {
+      border: 3px solid white;
+      background: transparent;
+      background-image: url('https://www.transparenttextures.com/patterns/clouds.png'); /* Cloudy background */
+      background-size: cover;
+      width: 100%; /* Ensures the table uses full width */
+      table-layout: fixed; /* Ensures columns are fixed and do not resize based on content */
+    }
+  
+    .table-custom th, .table-custom td {
+      text-align: center;
+      border: 1px solid white;
+      overflow: hidden;
+      text-overflow: visible;
+      white-space: break-word; /* Prevents text from wrapping to the next line */
+    }
+  
+    .table-custom td {
+      max-width: 150px; /* Adjust as necessary to control the maximum width */
+    }
+  
+    .btn-outline-light {
+      background: transparent;
+      border: 2px solid white;
+      color: white;
+    }
+  
+    .btn-outline-light:hover {
+      background: white;
+      color: black;
+    }
+  </style>
+  
+</head>
+<body>
+  <div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h3 class="text-white mb-0">
+        <span class="material-icons text-white me-2 fs-2 align-bottom">groups</span>
+        Users List
+      </h3>
+      <a href="/add" class="btn btn-outline-light">Add New User</a>
+    </div>
+    <table id="usersTable" class="table table-bordered table-striped table-custom">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Username</th>
+          <th>First Name</th>
+          <th>Last Name</th>
+          <th>Email/s</th>
+          <th>Phone Number/s</th>
+          <th>Date Created</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% users.forEach(user => { %>
+          <tr>
+            <td><%= user.user_id %></td>
+            <td><%= user.username %></td>
+            <td><%= user.first_name %></td>
+            <td><%= user.last_name %></td>
+            <td><%= user.email.join(', ') %></td>
+            <td><%= user.phone_number.join(', ') %></td>
+            <td><%= new Date(user.date_created).toLocaleString() %></td>
+            <td>
+              <a href="/update/<%= user.user_id %>" class="btn btn-primary btn-sm btn-custom">
+                <span class="material-icons text-white">edit</span>
+              </a> 
+              <a href="/delete/<%= user.user_id %>" onclick="return confirm('Are you sure?')" class="btn btn-danger btn-sm btn-custom">
+                <span class="material-icons text-white">delete</span>
+              </a>
+              
+            </td>
+          </tr>
+        <% }); %>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- jQuery -->
+  <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+  <!-- DataTables JS -->
+  <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+  <!-- Bootstrap JS -->
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+  <!-- Initialize DataTables -->
+  <script>
+    $(document).ready(function() {
+      $('#usersTable').DataTable({
+        "paging": true,
+        "searching": true,
+        "ordering": true,
+        "info": true,
+        columns: [
+          { width: '5%' },    // ID
+          { width: '15%' },   // Username
+          { width: '15%' },   // First Name
+          { width: '15%' },   // Last Name
+          { width: '20%' },   // Email/s
+          { width: '20%' },   // Phone Number/s
+          { width: '15%' },   // Date Created
+          { width: '10%' }    // Actions
+        ]
+      });
+    });
+  </script>
+  
+</body>
+</html>

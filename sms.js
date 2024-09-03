@@ -6,6 +6,16 @@ const bodyParser = require('body-parser');
 const multer = require('multer');
 const twilio = require('twilio');
 const path = require('path');
+const { Pool } = require('pg'); // Import pg module
+
+// PostgreSQL connection pool
+const pool = new Pool({
+    host: process.env.PG_HOST,
+    port: process.env.PG_PORT,
+    database: process.env.PG_DATABASE,
+    user: process.env.PG_USER,
+    password: process.env.PG_PASSWORD,
+});
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -58,7 +68,7 @@ app.post('/send-sms', upload.single('file'), (req, res) => {
 
     if (req.file) {
         // If a file is uploaded, construct the media URL
-        mediaUrl = `https://12ad-180-190-33-135.ngrok-free.app/uploads/${req.file.filename}`; // Adjust this URL for production
+        mediaUrl = `${process.env.NGROK_URL}/uploads/${req.file.filename}`; // Adjust this URL for production
         message += ` (Media: ${mediaUrl})`; // Append media URL to message
     }
 

@@ -1,81 +1,90 @@
-#inbox {
-    background-color: #fff;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    width: 33.33%; /* One-third of the width */
-    position: absolute; /* Absolute positioning */
-    left: 60px; /* Align with the sidebar */
-    top: 0; /* Start from the top */
-    height: 100vh; /* Full height */
-    z-index: 1000; /* Ensure it's above other content */
-    overflow-y: auto; /* Allow scrolling for long lists */
-    display: block;
-}
-
-.inboxMessage {
-    padding: 10px;
-    border-bottom: 1px solid #ccc;
-}
-
-.inboxMessage:last-child {
-    border-bottom: none; /* Remove border for last item */
-}
-
-.icon {
-    width: 40px; /* Icon size */
-    height: 40px; /* Icon size */
-    margin: 10px 0; /* Margin between icons */
-    cursor: pointer; /* Change cursor on hover */
-}
-
-.icon:hover {
-    opacity: 0.8; /* Slightly fade on hover */
-}
-
-
-/* Ensure images are contained within the column width */
-.img-circle {
-    border-radius: 50%;
-    width: 50px; /* Adjust size as needed */
-    height: 50px; /* Adjust size as needed */
-    object-fit: cover;
-}
-
-/* Ensure inbox messages fit within the column width */
-.inboxMessage {
+html, body {
+    height: 100%;
+    margin: 0;
+  }
+  
+  .row {
+    flex: 1; /* Ensures row takes up available space in container */
     display: flex;
-    align-items: flex-start;
-    overflow: hidden; /* Prevent content overflow */
-    width: 100%; /* Ensure messages use full width of the column */
-}
+  }
+  
+  .dashboard-item {
+    background-color: #00052D; /* Oxford Blue */
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  
+  .dashboard-item h2 {
+    margin-bottom: 1rem;
+    font-size: 1.25rem;
+  }
+  
+  .dashboard-item p {
+    margin: 0.5rem 0;
+    font-size: 1rem;
+  }
+  
+  .recent-interactions {
+    background-color: #000E4A; /* Penn Blue */
+    height: 100%;
+    padding: 1rem;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  
+  .recent-interactions h2 {
+    font-size: 1.25rem;
+    margin-bottom: 1rem;
+  }
+  
+  .recent-interactions ul {
+    list-style-type: none;
+    padding-left: 0;
+    margin: 0;
+    flex-grow: 1;
+  }
+  
+  .recent-interactions li {
+    border-bottom: 1px solid #003196; /* Egyptian Blue */
+    padding: 0.5rem 0;
+  }
+  
+  /* New CSS for table customization */
+  .table-custom {
+    border: 3px solid white;
+    background: transparent;
+    background-size: cover;
+  }
+  
+  .table-custom th, .table-custom td {
+    text-align: center;
+    border: 1px solid white;
+  }
+  
+  /* New CSS for button styling */
+  .btn-outline-light {
+    background: transparent;
+    border: 2px solid white;
+    color: white;
+  }
+  
+  .btn-outline-light:hover {
+    background: white;
+    color: black;
+  }
 
-/* Ensure text does not overflow */
-.name {
-    font-size: 1.25rem; /* Adjust size as needed */
-    font-weight: bold;
-    margin-bottom: 0.25rem;
-    overflow: hidden; /* Hide overflowing text */
-    text-overflow: ellipsis; /* Add ellipsis for overflow text */
-    white-space: nowrap; /* Prevent line breaks */
-}
-
-.mobile-number,
-.excerpt {
-    font-size: 0.75rem; /* Smaller font size like <small> */
-    color: #6c757d; /* Bootstrap secondary text color */
-}
-
-.excerpt {
-    color: #343a40; /* Bootstrap dark text color */
-    overflow: hidden; /* Hide overflowing text */
-    text-overflow: ellipsis; /* Add ellipsis for overflow text */
-    white-space: nowrap; /* Prevent line breaks */
-}
-
-/* Date and time styling */
-.date-time {
-    font-size: 0.75rem;
-    color: #adb5bd; /* Bootstrap muted text color */
-    text-align: right;
-}
-
+  .btn-custom {
+    padding: 0.25rem 0.5rem; /* Adjust padding for smaller buttons */
+    font-size: 0.75rem; /* Smaller font size */
+    line-height: 1; /* Adjust line height to match font size */
+    border-radius: 0.2rem; /* Optional: smaller border radius for a tighter look */
+  }
+  
+  .btn-custom .material-icons {
+    font-size: 1rem; /* Adjust icon size */
+  }
+    

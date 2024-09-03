@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Add User</title>
+  <script>
+    function addField(containerId, inputName, placeholder) {
+      const container = document.getElementById(containerId);
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.name = inputName + '[]'; // Append an array to handle multiple values
+      input.placeholder = placeholder;
+      input.required = true;
+      container.appendChild(input);
+      container.appendChild(document.createElement('br'));
+    }
+
+    function removeField(containerId) {
+      const container = document.getElementById(containerId);
+      if (container.children.length > 2) { // Keep at least one field and the "Add" button
+        container.removeChild(container.lastChild); // Remove <br>
+        container.removeChild(container.lastChild); // Remove the input field
+      }
+    }
+  </script>
+</head>
+<body>
+  <h1>Add User</h1>
+  <form action="/add-user" method="post">
+    <label>Username:</label>
+    <input type="text" name="username" required><br>
+    
+    <label>First Name:</label>
+    <input type="text" name="first_name" required><br>
+    
+    <label>Last Name:</label>
+    <input type="text" name="last_name" required><br>
+    
+    <label>Email/s:</label>
+    <div id="emailContainer">
+      <input type="text" name="email[]" placeholder="Email" required><br>
+    </div>
+    <button type="button" onclick="addField('emailContainer', 'email', 'Email')">Add Email</button>
+    <button type="button" onclick="removeField('emailContainer')">Remove Email</button><br>
+    
+    <label>Phone Number/s:</label>
+    <div id="phoneContainer">
+      <input type="text" name="phone_number[]" placeholder="Phone Number" required><br>
+    </div>
+    <button type="button" onclick="addField('phoneContainer', 'phone_number', 'Phone Number')">Add Phone Number</button>
+    <button type="button" onclick="removeField('phoneContainer')">Remove Phone Number</button><br>
+    
+    <label>Password:</label>
+    <input type="password" name="password" required><br>
+    
+    <label>App Password:</label>
+    <input type="password" name="app_password" required><br>
+    
+    <input type="submit" value="Add User">
+  </form>
+</body>
+</html>

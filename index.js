@@ -1,133 +1,71 @@
-// index.js
 const express = require('express');
-const http = require('http');
-const socketIo = require('socket.io');
-const nodemailer = require('nodemailer');
-const twilio = require('twilio');
-const { ImapFlow } = require('imapflow');
+const bodyParser = require('body-parser');
+const session = require('express-session');
+const path = require('path');
+const ejsLayouts = require('express-ejs-layouts');
+const userController = require('./controllers/userController'); // Import the user controller
+const authController = require('./controllers/authController'); // Import the auth controller
+
 require('dotenv').config();
 
+// Set up the Express app
 const app = express();
-const server = http.createServer(app);
-const io = socketIo(server);
+const port = 3000;
 
-const twilioClient = twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+// Middleware
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(express.static(path.join(__dirname, 'public')));
 
-// Email transporter
-const transporter = nodemailer.createTransport({
-    service: 'gmail', // Change to your email provider
-    auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS,
-    },
+// Session middleware
+app.use(session({
+  secret: process.env.SESSION_SECRET || 'default_secret', // Use a secret for session encryption
+  resave: false,
+  saveUninitialized: true,
+  cookie: { secure: false } // Set `secure: true` if you're using HTTPS
+}));
+
+// Set EJS as the templating engine
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
+
+// Use express-ejs-layouts
+app.use(ejsLayouts);
+
+// Middleware to check if user is authenticated
+function isAuthenticated(req, res, next) {
+  if (req.session.user) {
+    return next();
+  }
+  res.redirect('/login');
+}
+
+
+// Authentication routes
+app.get('/login', authController.renderLoginPage);
+app.post('/login', authController.loginUser);
+app.get('/logout', authController.logoutUser);
+
+
+// User management routes
+app.get('/home', isAuthenticated, authController.renderHomePage);
+app.get('/users', isAuthenticated, userController.getUsers);
+app.get('/add', isAuthenticated, userController.renderAddUserForm);
+app.post('/add-user', isAuthenticated, userController.addUser);
+app.get('/update/:id', isAuthenticated, userController.renderUpdateUserForm);
+app.post('/update/:id', isAuthenticated, userController.updateUser);
+app.get('/delete/:id', isAuthenticated, userController.deleteUser);
+
+// In your route handler
+app.get('/about', (req, res) => {
+res.render('about', { title: 'About Us', page: 'about' });
 });
 
-// Setup IMAP connection for receiving emails
-const imap = new ImapFlow({
-    host: process.env.IMAP_HOST,
-    port: process.env.IMAP_PORT,
-    secure: true,
-    auth: {
-        user: process.env.IMAP_USER,
-        pass: process.env.IMAP_PASS,
-    },
+app.get('/contact', (req, res) => {
+res.render('contact', { title: 'Contact Us', page: 'contact' });
 });
 
-// Function to check for new emails
-const checkEmails = async () => {
-    await imap.connect();
-    imap.on('mailboxOpen', (name, info) => {
-        console.log(`Mailbox "${name}" opened: ${info}`);
-    });
-
-    // Use a simple polling mechanism for checking emails
-    setInterval(async () => {
-        const lock = await imap.getMailboxLock('INBOX');
-        try {
-            const messages = await imap.fetch('1:*', { envelope: true });
-            for await (let msg of messages) {
-                console.log(`${msg.envelope.subject}`);
-                // Emit email to clients via Socket.IO
-                io.emit('emailReceived', msg.envelope);
-            }
-        } finally {
-            lock.release();
-        }
-    }, 10000); // Check every 10 seconds
-};
-
-// Start checking for emails
-checkEmails();
-
-// Serve static files
-app.use(express.static('public'));
-app.use(express.json());
-
-// Socket.IO for chat functionality
-io.on('connection', (socket) => {
-    console.log('New user connected');
-
-    socket.on('chatMessage', (msg) => {
-        io.emit('chatMessage', msg);
-    });
-
-    socket.on('disconnect', () => {
-        console.log('User disconnected');
-    });
-});
-
-// Send email
-app.post('/send-email', (req, res) => {
-    const { to, subject, text } = req.body;
-
-    const mailOptions = {
-        from: process.env.EMAIL_USER,
-        to,
-        subject,
-        text,
-    };
-
-    transporter.sendMail(mailOptions, (error, info) => {
-        if (error) {
-            return res.status(500).send(error.toString());
-        }
-        res.status(200).send('Email sent: ' + info.response);
-    });
-});
-
-// Send SMS
-app.post('/send-sms', (req, res) => {
-    const { to, body } = req.body;
-
-    twilioClient.messages
-        .create({
-            body,
-            from: process.env.TWILIO_PHONE_NUMBER,
-            to,
-        })
-        .then(message => res.status(200).send('SMS sent: ' + message.sid))
-        .catch(error => res.status(500).send(error.toString()));
-});
-
-// Twilio webhook for receiving SMS
-app.post('/sms', (req, res) => {
-    const { From, Body } = req.body;
-    console.log(`Received SMS from ${From}: ${Body}`);
-    // Emit the received SMS to the client
-    io.emit('smsReceived', { from: From, body: Body });
-    res.send('<Response></Response>'); // Respond to Twilio
-});
-
-// Twilio webhook for receiving voice calls
-app.post('/voice', (req, res) => {
-    const { From } = req.body;
-    console.log(`Received voice call from ${From}`);
-    // Implement voice handling logic here, if needed
-    res.send('<Response><Say>Hello, you have reached us!</Say></Response>'); // Respond to Twilio
-});
 
 // Start the server
-const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => {
-    console.log(`Server is running on http://localhost:${PORT}`);
+app.listen(port, () => {
+  console.log(`App running on http://localhost:${port}`);
 });

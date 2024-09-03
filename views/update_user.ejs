@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Update User</title>
+  <script>
+    function addField(containerId, inputName, placeholder) {
+      const container = document.getElementById(containerId);
+      const input = document.createElement('input');
+      input.type = 'text';
+      input.name = inputName + '[]'; // Append an array to handle multiple values
+      input.placeholder = placeholder;
+      input.required = true;
+      container.appendChild(input);
+      container.appendChild(document.createElement('br'));
+    }
+
+    function removeField(containerId) {
+      const container = document.getElementById(containerId);
+      if (container.children.length > 2) { // Keep at least one field and the "Add" button
+        container.removeChild(container.lastChild); // Remove <br>
+        container.removeChild(container.lastChild); // Remove the input field
+      }
+    }
+  </script>
+</head>
+<body>
+  <h1>Update User</h1>
+  <form action="/update/<%= user.user_id %>" method="post">
+    <label>Username:</label>
+    <input type="text" name="username" value="<%= user.username %>" required><br>
+    
+    <label>First Name:</label>
+    <input type="text" name="first_name" value="<%= user.first_name %>" required><br>
+    
+    <label>Last Name:</label>
+    <input type="text" name="last_name" value="<%= user.last_name %>" required><br>
+    
+    <label>Email/s:</label>
+    <div id="emailContainer">
+      <% user.email.forEach(email => { %>
+        <input type="text" name="email[]" value="<%= email %>" required><br>
+      <% }) %>
+    </div>
+    <button type="button" onclick="addField('emailContainer', 'email', 'Email')">Add Email</button>
+    <button type="button" onclick="removeField('emailContainer')">Remove Email</button><br>
+    
+    <label>Phone Number/s:</label>
+    <div id="phoneContainer">
+      <% user.phone_number.forEach(phone => { %>
+        <input type="text" name="phone_number[]" value="<%= phone %>" required><br>
+      <% }) %>
+    </div>
+    <button type="button" onclick="addField('phoneContainer', 'phone_number', 'Phone Number')">Add Phone Number</button>
+    <button type="button" onclick="removeField('phoneContainer')">Remove Phone Number</button><br>
+    
+    <label>Password (leave blank to keep current):</label>
+    <input type="password" name="password"><br>
+    
+    <label>App Password (leave blank to keep current):</label>
+    <input type="password" name="app_password"><br>
+    
+    <input type="submit" value="Update User">
+  </form>
+  <a href="/users">Back to Users List</a>
+</body>
+</html>
