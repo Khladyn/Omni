@@ -15,7 +15,11 @@ const getUsers = async (req, res) => {
 
 // Render the form for adding a user
 const renderAddUserForm = (req, res) => {
-  res.render('add_user');
+  res.render('register', { 
+    title: 'Registration',
+    layout: false,
+    error: req.query.error,
+    success: req.query.success }); 
 };
 
 // Handle form submission for adding a user
@@ -25,22 +29,46 @@ const addUser = async (req, res) => {
     const emailArray = req.body.email || [];
     const phoneArray = req.body.phone_number || [];
 
+    // Check for existing username
+    const userCheck = await pool.query('SELECT * FROM "USERS" WHERE username = $1', [username]);
+    if (userCheck.rows.length > 0) {
+      // Username already exists
+      return res.render('register', {
+        title: 'Registration',
+        layout: false,
+        error: 'Username already exists',
+        success: req.query.success
+      });
+    }
+
+    // Hash the password
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
-    const hashedAppPassword = await bcrypt.hash(app_password, saltRounds);
 
-    await pool.query(
-      `INSERT INTO "USERS" (username, first_name, last_name, email, phone_number, password, app_password)
-       VALUES ($1, $2, $3, $4, $5, $6, $7)`,
-      [username, first_name, last_name, emailArray, phoneArray, hashedPassword, hashedAppPassword]
-    );
+    // Base query and parameters
+    let query = `INSERT INTO "USERS" (username, first_name, last_name, email, phone_number, password`;
+    let queryParams = [username, first_name, last_name, emailArray, phoneArray, hashedPassword];
+    
+    // Add app_password if provided
+    if (app_password) {
+      const hashedAppPassword = await bcrypt.hash(app_password, saltRounds);
+      query += `, app_password) VALUES ($1, $2, $3, $4, $5, $6, $7)`;
+      queryParams.push(hashedAppPassword);
+    } else {
+      query += `) VALUES ($1, $2, $3, $4, $5, $6)`;
+    }
 
-    res.send('User added successfully! <a href="/users">View Users</a>');
+    // Execute the query
+    await pool.query(query, queryParams);
+    // Redirect with success message
+    res.redirect('/login?success=Account created successfully!');
   } catch (err) {
     console.error('Error inserting user', err);
-    res.status(500).send('Error adding user');
+    res.redirect('/login?error=Error creating account');
   }
 };
+
+
 
 // Render the form for updating a user
 const renderUpdateUserForm = async (req, res) => {

@@ -49,8 +49,8 @@ app.get('/logout', authController.logoutUser);
 // User management routes
 app.get('/home', isAuthenticated, authController.renderHomePage);
 app.get('/users', isAuthenticated, userController.getUsers);
-app.get('/add', isAuthenticated, userController.renderAddUserForm);
-app.post('/add-user', isAuthenticated, userController.addUser);
+app.get('/register', userController.renderAddUserForm);
+app.post('/register', userController.addUser);
 app.get('/update/:id', isAuthenticated, userController.renderUpdateUserForm);
 app.post('/update/:id', isAuthenticated, userController.updateUser);
 app.get('/delete/:id', isAuthenticated, userController.deleteUser);

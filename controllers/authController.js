@@ -1,9 +1,14 @@
 const pool = require('../db');
 const bcrypt = require('bcryptjs');
 
-// Render the login page
+// Render the login page with optional error message
 const renderLoginPage = (req, res) => {
-  res.render('login', { title: 'Login', layout: false }); // Disable layout for login page
+  res.render('login', {
+    title: 'Login',
+    layout: false,
+    error: req.query.error,
+    success: req.query.success
+  });
 };
 
 // Render the home page
@@ -40,7 +45,8 @@ const loginUser = async (req, res) => {
       res.render('login', {
         title: 'Login',
         layout: false,
-        error: 'Invalid username or password'
+        error: 'Invalid username or password',
+        success: req.query.success
       });
     }
   } catch (err) {

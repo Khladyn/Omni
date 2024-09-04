@@ -40,12 +40,12 @@ app.get('/users', async (req, res) => {
 });
 
 // Render the form for adding a user
-app.get('/add', (req, res) => {
-  res.render('add_user');
+app.get('/register', (req, res) => {
+  res.render('register');
 });
 
 // Handle form submission for adding a user
-app.post('/add-user', async (req, res) => {
+app.post('/register', async (req, res) => {
     try {
 
     console.log('Request Body:', req.body);
