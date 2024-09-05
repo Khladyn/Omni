@@ -158,14 +158,7 @@ const getChatById = async (req, res) => {
         res.status(500).json({ error: 'Internal Server Error' });
     }
 };
-  
-  // Render the form for adding a user
-const renderEmail = (req, res) => {
-    res.render('email', { 
-      title: 'Email',
-      error: req.query.error,
-      success: req.query.success }); 
-  };
+
 
   // Render the form for adding a user
 const renderVoice = (req, res) => {
@@ -185,7 +178,6 @@ const renderSms = (req, res) => {
 
   module.exports = {
     renderChat,
-    renderEmail,
     renderVoice,
     renderSms,
     getChatById,

@@ -12,6 +12,7 @@ html, body {
   .row {
     flex: 1; /* Ensures row takes up available space in container */
     display: flex;
+    flex-wrap: nowrap;
   }
   
   .dashboard-item {
@@ -141,3 +142,22 @@ ul {
   margin-top: 5px;
 }
 
+.ql-toolbar {
+  background-color: #f5f5f5; /* Set your desired background color */
+  border-radius: 8px 8px 0 0; /* Rounded top corners */
+  border: 1px solid #ddd; /* Optional border styling */
+}
+
+.resizer {
+  width: 1px;
+  cursor: col-resize;
+  padding: 2px
+}
+
+#chatListContainer {
+  min-width: 150px; /* Minimum width for the chat list */
+}
+
+#chatContainerWrapper {
+  min-width: 300px; /* Minimum width for the expanded chat */
+}

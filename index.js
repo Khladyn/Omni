@@ -5,7 +5,8 @@ const path = require('path');
 const ejsLayouts = require('express-ejs-layouts');
 const userController = require('./controllers/userController'); // Import the user controller
 const authController = require('./controllers/authController'); // Import the auth controller
-const interactionController = require('./controllers/interactionController'); // Import the auth controller
+const chatController = require('./controllers/chatController'); // Import the auth controller
+const emailController = require('./controllers/emailController'); // Import the auth controller
 
 require('dotenv').config();
 
@@ -17,6 +18,20 @@ const port = 3000;
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
 app.use('/uploads', express.static('uploads'));
+
+const multer = require('multer');
+
+// Configure storage for uploaded files
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, 'uploads/'); // Set the directory for storing files
+    },
+    filename: (req, file, cb) => {
+        cb(null, Date.now() + path.extname(file.originalname)); // Unique filename
+    }
+});
+
+const upload = multer({ storage });
 
 // Session middleware
 app.use(session({
@@ -65,14 +80,20 @@ app.post('/update/:id', isAuthenticated, userController.updateUser);
 app.get('/delete/:id', isAuthenticated, userController.deleteUser);
 
 
-// Interaction management routes
-app.get('/chat/:id', isAuthenticated, interactionController.getChatById);
-app.post('/sendChat', isAuthenticated, interactionController.sendChat);
-app.get('/findUser', isAuthenticated, interactionController.findUser);
-app.get('/chat', isAuthenticated, interactionController.renderChat);
-app.get('/email', isAuthenticated, interactionController.renderEmail);
-app.get('/voice', isAuthenticated, interactionController.renderVoice);
-app.get('/sms', isAuthenticated, interactionController.renderSms);
+// Chat management routes
+app.get('/chat/:id', isAuthenticated, chatController.getChatById);
+app.post('/sendChat', isAuthenticated, chatController.sendChat);
+app.get('/findUser', isAuthenticated, chatController.findUser);
+app.get('/chat', isAuthenticated, chatController.renderChat);
+
+// Email management routes
+app.get('/email', isAuthenticated, emailController.renderEmail);
+app.get('/fetchEmails', isAuthenticated, emailController.fetchEmails);
+app.post('/sendEmail', isAuthenticated, upload.array('attachments'), emailController.sendEmail);
+app.post('/replyEmail', isAuthenticated, upload.array('attachments'), emailController.replyEmail);
+
+app.get('/voice', isAuthenticated, chatController.renderVoice);
+app.get('/sms', isAuthenticated, chatController.renderSms);
 
 
 // Start the server
