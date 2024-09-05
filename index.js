@@ -78,3 +78,4 @@ app.get('/sms', isAuthenticated, interactionController.renderSms);
 app.listen(port, () => {
   console.log(`App running on http://localhost:${port}`);
 });
+
