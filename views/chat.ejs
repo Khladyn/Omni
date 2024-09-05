@@ -538,7 +538,7 @@ async function startRecording() {
             const audio = new Audio(audioUrl);
             const listItem = document.createElement('div');
             listItem.innerHTML = `<audio controls src="${audioUrl}"></audio>`;
-            recordingsList.appendChild(listItem);
+            // recordingsList.appendChild(listItem);
             audioChunks = []; // Reset audio chunks for the next recording
 
             // Stop all audio tracks when recording stops
