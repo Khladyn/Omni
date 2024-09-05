@@ -64,7 +64,13 @@ const addUser = async (req, res) => {
     res.redirect('/login?success=Account created successfully!');
   } catch (err) {
     console.error('Error inserting user', err);
-    res.redirect('/login?error=Error creating account');
+    // Username already exists
+    return res.render('register', {
+      title: 'Registration',
+      layout: false,
+      error: 'Error creating account',
+      success: req.query.success
+    });
   }
 };
 

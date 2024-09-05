@@ -5,6 +5,7 @@ const path = require('path');
 const ejsLayouts = require('express-ejs-layouts');
 const userController = require('./controllers/userController'); // Import the user controller
 const authController = require('./controllers/authController'); // Import the auth controller
+const interactionController = require('./controllers/interactionController'); // Import the auth controller
 
 require('dotenv').config();
 
@@ -15,6 +16,7 @@ const port = 3000;
 // Middleware
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
+app.use('/uploads', express.static('uploads'));
 
 // Session middleware
 app.use(session({
@@ -31,6 +33,14 @@ app.set('views', path.join(__dirname, 'views'));
 // Use express-ejs-layouts
 app.use(ejsLayouts);
 
+// Use JSON
+app.use(express.json());
+
+// Default route
+app.get('/', (req, res) => {
+  res.redirect('/login');
+});
+
 // Middleware to check if user is authenticated
 function isAuthenticated(req, res, next) {
   if (req.session.user) {
@@ -38,7 +48,6 @@ function isAuthenticated(req, res, next) {
   }
   res.redirect('/login');
 }
-
 
 // Authentication routes
 app.get('/login', authController.renderLoginPage);
@@ -55,14 +64,14 @@ app.get('/update/:id', isAuthenticated, userController.renderUpdateUserForm);
 app.post('/update/:id', isAuthenticated, userController.updateUser);
 app.get('/delete/:id', isAuthenticated, userController.deleteUser);
 
-// In your route handler
-app.get('/about', (req, res) => {
-res.render('about', { title: 'About Us', page: 'about' });
-});
 
-app.get('/contact', (req, res) => {
-res.render('contact', { title: 'Contact Us', page: 'contact' });
-});
+// Interaction management routes
+app.get('/chat/:id', isAuthenticated, interactionController.getChatById);
+app.post('/sendChat', isAuthenticated, interactionController.sendChat);
+app.get('/chat', isAuthenticated, interactionController.renderChat);
+app.get('/email', isAuthenticated, interactionController.renderEmail);
+app.get('/voice', isAuthenticated, interactionController.renderVoice);
+app.get('/sms', isAuthenticated, interactionController.renderSms);
 
 
 // Start the server

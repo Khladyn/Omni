@@ -1,6 +1,12 @@
 html, body {
     height: 100%;
     margin: 0;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  ::-webkit-scrollbar {
+      display: none; /* Hides the scrollbar */
   }
   
   .row {
@@ -87,4 +93,51 @@ html, body {
   .btn-custom .material-icons {
     font-size: 1rem; /* Adjust icon size */
   }
-    
+
+  /* Hide scrollbar for WebKit browsers */
+ul::-webkit-scrollbar {
+  display: none; /* Hide scrollbar */
+}
+
+/* Hide scrollbar for Firefox */
+ul {
+  scrollbar-width: none; /* Hide scrollbar */
+}
+
+/* Hide scrollbar for Edge and Internet Explorer */
+ul {
+  -ms-overflow-style: none; /* Hide scrollbar */
+}
+
+#emojiPicker {
+  position: absolute;
+  display: none;
+  z-index: 1000;
+}
+
+/* Common styles for chat messages */
+.message {
+  max-width: 60%; /* Limit width for better readability */
+  margin: 5px 0;
+  padding: 12px;
+  border-radius: 10px;
+  word-wrap: break-word;
+  color: #00052D;
+}
+
+.message-right {
+  align-self: flex-end;
+  background-color: #e1ffc7; /* Example background color */
+}
+
+.message-left {
+  align-self: flex-start;
+  background-color: #f0f0f0; /* Example background color */
+}
+
+.timestamp {
+  font-size: 0.8em;
+  color: #888; /* Color for the timestamp */
+  margin-top: 5px;
+}
+
