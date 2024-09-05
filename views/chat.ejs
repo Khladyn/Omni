@@ -3,13 +3,17 @@
     <div class="row" style="height: calc(100vh - 12rem);">
       <!-- Chat List -->
       <div class="col-md-4 col-lg-3 d-flex flex-column h-100">
-        <h4 class="text-white mb-3">
-          <span class="material-icons text-white align-bottom me-1">chat</span>
-          Chats
-        </h4>
-        <ul class="list-group flex-grow-1 overflow-auto" style="max-height: 100%;">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h4 class="text-white mb-0">
+              <span class="material-icons text-white align-bottom me-1">chat</span>
+              Chats
+          </h4>
+          <span id="newChat" class="material-icons text-white align-bottom fs-3 ms-3" role="button" title="New chat">add_box</span>
+      </div>
+      
+        <ul id="chatList" class="list-group flex-grow-1 overflow-auto" style="max-height: 100%;">
           <% chats.forEach(chat => { %>
-          <li class="list-group-item list-group-item-action" onclick="showChat('<%= chat.contact_info %>')">
+          <li class="list-group-item list-group-item-action" onclick="selectItem('<%= chat.contact_info %>')" role="button">
             <%= chat.username %>
           </li>
           <% }) %>
@@ -18,12 +22,14 @@
   
       <!-- Expanded Chat -->
       <div class="col-md-8 col-lg-9 d-flex flex-column h-100 justify-content-end">
-        <div id="chatContainer" class="d-flex flex-column overflow-auto">
-            <!-- Search bar -->
-            <div class="search-bar p-2">
-                <input type="text" class="form-control" placeholder="Enter username">
-            </div>
+        
+        <div id="searchBar" class="mb-auto">
+          <!-- Search bar -->
+          <input type="text" id="username-input" class="form-control" placeholder="Enter username">
+          <div id="suggestions" class="bg-light border border-3 border-white rounded-3 p-3 invisible"></div>
+        </div>
 
+        <div id="chatContainer" class="d-flex flex-column overflow-auto">    
         </div>
             <!-- Chat messages will be dynamically loaded here -->
             <emoji-picker id="emojiPicker" style="display: none; margin-bottom: 4em; right: 3em"></emoji-picker>
@@ -138,16 +144,14 @@
 function createMessageHTML(msg) {
   // Start with the content of the message
   let content = `${msg.content}`;
-  
-  console.log("ATTACHMENTS: ", msg.attachment);
-  
+
     // Check if there are attachments
     if (msg.attachment && Array.isArray(msg.attachment)) {
         msg.attachment.forEach(attachmentUrl => {
         // Determine the file type and create HTML accordingly
         const fileExtension = attachmentUrl.split('.').pop().toLowerCase();
         
-        if (['jpg', 'jpeg', 'png', 'gif'].includes(fileExtension)) {
+      if (['jpg', 'jpeg', 'png', 'gif'].includes(fileExtension)) {
         // Image file
         content += `<br><img src="${attachmentUrl}" alt="Attachment" style="max-width: 100%; height: auto;">`;
       } else if (['mp3', 'wav'].includes(fileExtension)) {
@@ -175,82 +179,124 @@ function createMessageHTML(msg) {
   return content;
 }
 
+let newMessages = false;
+let lastMessageId = 0;
+let lastChatId = 0;
 
-var newMessageId = 0;
+function selectItem(chatId) {
+  const searchBar = document.getElementById('searchBar');
+  searchBar.classList.add('d-none');
+  showChat(chatId)
+}
 
 function showChat(chatId) {
+
+  if (chatId !== null && chatId !== undefined) {
+  
   // Clear previous chat messages
   const chatContainer = document.getElementById('chatContainer');
-//   chatContainer.innerHTML = 'Loading...';
   chatContainer.classList.add('text-white');
-  console.log("Chat called");
-  var lastMessageId = 0;
+  document.getElementById('sendButton').setAttribute('data-contact-info', chatId);
 
   // Make AJAX request to fetch chat messages
-  fetch(`/chat/${chatId}`)
+  fetch(`/chat/${chatId}?lastMessageId=${lastMessageId}`)
     .then(response => response.json())
     .then(data => {
-      chatContainer.innerHTML = ''; // Clear loading text
+
+      
+      if (data.newMessages || (lastChatId != chatId)) {
+            chatContainer.innerHTML = '';
 
       // Render chat messages
       data.interactions.forEach(msg => {
-        lastMessageId = msg.interaction_id;
-        const messageElement = document.createElement('div');
-        messageElement.className = 'message';
-
-        // Create a timestamp element
-        const timestampElement = document.createElement('div');
-        timestampElement.className = 'timestamp';
-        timestampElement.textContent = msg.date_created; // Use the parsing function
-        timestampElement.style.display = 'none'; // Hide timestamp initially
-
-        // Apply styles based on user ID
-        if (msg.user_id === data.session_user_id) {
-          messageElement.classList.add('message-right'); // Add a class for messages from the user
-        } else {
-          messageElement.classList.add('message-left'); // Add a class for messages from others
-          document.getElementById('sendButton').setAttribute('data-contact-info', msg.user_id);
-        }
-
-        // Add message content and timestamp
-        // messageElement.innerHTML = `${msg.content}`;
-        messageElement.innerHTML = createMessageHTML(msg);
         
-        messageElement.appendChild(timestampElement);
+          const messageElement = document.createElement('div');
+          messageElement.className = 'message';
 
-        // Add click event to show/hide the timestamp
-        messageElement.addEventListener('click', () => {
-          if (timestampElement.style.display === 'none') {
-            timestampElement.style.display = 'block'; // Show timestamp
+          // Create a timestamp element
+          const timestampElement = document.createElement('div');
+          timestampElement.className = 'timestamp';
+          timestampElement.textContent = msg.date_created; // Use the parsing function
+          timestampElement.style.display = 'none'; // Hide timestamp initially
+
+          // Apply styles based on user ID
+          if (msg.user_id === data.session_user_id) {
+            messageElement.classList.add('message-right'); // Add a class for messages from the user
           } else {
-            timestampElement.style.display = 'none'; // Hide timestamp
+            messageElement.classList.add('message-left'); // Add a class for messages from others
           }
-        });
 
-        chatContainer.appendChild(messageElement);
+          // Add message content and timestamp
+          messageElement.innerHTML = createMessageHTML(msg);
+
+          messageElement.appendChild(timestampElement);
+
+          // Add click event to show/hide the timestamp
+          messageElement.addEventListener('click', () => {
+            if (timestampElement.style.display === 'none') {
+              timestampElement.style.display = 'block'; // Show timestamp
+            } else {
+              timestampElement.style.display = 'none'; // Hide timestamp
+            }
+          });
+
+            chatContainer.appendChild(messageElement);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+            // Stop all playing audio and video elements
+            document.querySelectorAll('audio, video').forEach(mediaElement => {
+                if (!mediaElement.paused) {
+                    mediaElement.pause(); // Pause the media
+                    mediaElement.currentTime = 0; // Optionally reset the playback position
+                }
+            });
+
+          lastMessageId = msg.interaction_id;
       });
-
-      console.log("NM: ", newMessageId);
-      console.log("LS: ", lastMessageId);
-
-      if (newMessageId != lastMessageId) {
-        // Scroll to the bottom of the chatContainer
-        chatContainer.scrollTop = chatContainer.scrollHeight;
-      }
-
-      newMessageId = lastMessageId;
-
+    }
+      lastChatId = chatId;
     })
     .catch(error => {
       console.error('Error loading chat:', error);
-    //   chatContainer.innerHTML = 'Error loading chat messages.';
     });
+  }
 }
+
 
 setInterval(() => {
     const contactInfo = document.getElementById('sendButton').getAttribute('data-contact-info');
   showChat(contactInfo);
 }, 2000);  // 2000 milliseconds = 2 seconds
+
+
+function addContact(contactInfo, username) {
+    const chatList = document.getElementById('chatList');
+    let itemExists = false; // Flag to check if item already exists
+
+    // Loop through each list item to check for existing item
+    const listItems = chatList.getElementsByTagName('li');
+    for (let i = 0; i < listItems.length; i++) {
+        const item = listItems[i];
+        if (item.textContent.trim() === username.trim()) {
+            itemExists = true; // Set flag to true if item is found
+            break; // Exit loop since item is already present
+        }
+    }
+
+    console.log("IE: ", itemExists);
+
+    // If item does not exist, create and append a new one
+    if (!itemExists) {
+        const newItem = document.createElement('li');
+        newItem.className = 'list-group-item list-group-item-action';
+        newItem.setAttribute('role', 'button');
+        newItem.setAttribute('onclick', `selectItem('${contactInfo}')`);
+        newItem.textContent = username;
+
+        chatList.appendChild(newItem);
+    }
+}
+
+
 
 // SEND BUTTON
 // Event listener for the send button
@@ -297,35 +343,8 @@ function sendChat(contactInfo) {
       attachButton.classList.remove("btn-success");
       attachButton.classList.add("btn-light");
 
-      // Create a new message element
-      const chatContainer = document.getElementById('chatContainer');
-      const messageElement = document.createElement('div');
-      messageElement.className = 'message message-right'; // Add class for user messages
-
-      // Create a timestamp element
-      const timestampElement = document.createElement('div');
-      timestampElement.className = 'timestamp';
-      timestampElement.textContent = new Date().toISOString(); // Use current date/time
-      timestampElement.style.display = 'none'; // Hide timestamp initially
-
-      // Add message content and timestamp
-      messageElement.innerHTML = `${message}`;
-      messageElement.appendChild(timestampElement);
-
-      // Add click event to show/hide the timestamp
-      messageElement.addEventListener('click', () => {
-        if (timestampElement.style.display === 'none') {
-          timestampElement.style.display = 'block'; // Show timestamp
-        } else {
-          timestampElement.style.display = 'none'; // Hide timestamp
-        }
-      });
-
-      // Append the new message to the chat container
-      chatContainer.appendChild(messageElement);
-
-      // Scroll to the bottom of the chat container to show the new message
-      chatContainer.scrollTop = chatContainer.scrollHeight;
+      const username = document.getElementById('username-input').value;
+      addContact(contactInfo, username);
 
       console.log('Message sent and displayed successfully:', result);
     } else {
@@ -338,146 +357,6 @@ function sendChat(contactInfo) {
   });
 }
 
-
-
-// function parseDate(dateStr) {
-//   const [time, offset] = dateStr.split('+');
-//   const [hours, minutes, seconds] = time.split(':');
-//   const formattedTime = `${hours}:${minutes}:${seconds}`;
-
-//   const now = new Date();
-//   const date = new Date(`${now.toDateString()} ${formattedTime}`);
-
-//   return date.toLocaleString();
-// }
-
-// function showChat(chatId) {
-//   const chatContainer = document.getElementById('chatContainer');
-//   chatContainer.innerHTML = 'Loading...';
-//   chatContainer.classList.add('text-white');
-
-//   let lastMessageTimestamp = 0; // Initialize with 0 for the first fetch
-//   let pollingActive = true; // Flag to control polling
-
-//   // Clear previous chat messages when a new chat is selected
-//   chatContainer.innerHTML = '';
-
-//   // Stop polling when switching chats
-//   const stopPolling = () => {
-//     pollingActive = false;
-//   };
-
-//   // Long polling to fetch chat messages
-//   const fetchChatMessages = () => {
-//     if (!pollingActive) return; // Stop fetching if polling is inactive
-
-//     fetch(`/chat/${chatId}?lastMessageTimestamp=${lastMessageTimestamp}`)
-//       .then(response => response.json())
-//       .then(data => {
-//         // Clear loading text if it's still there
-//         if (chatContainer.innerHTML === 'Loading...') {
-//           chatContainer.innerHTML = '';
-//         }
-
-//         // Only proceed if there are new interactions
-//         if (data.interactions.length > 0) {
-//           data.interactions.forEach(msg => {
-//             const messageElement = document.createElement('div');
-//             messageElement.className = 'message';
-
-//             const timestampElement = document.createElement('div');
-//             timestampElement.className = 'timestamp';
-//             timestampElement.textContent = msg.date_created;
-//             timestampElement.style.display = 'none';
-
-//             // Set message alignment based on the user
-//             if (msg.user_id === data.session_user_id) {
-//               messageElement.classList.add('message-right');
-//             } else {
-//               messageElement.classList.add('message-left');
-//               document.getElementById('sendButton').setAttribute('data-contact-info', msg.user_id);
-//             }
-
-//             messageElement.innerHTML = `${msg.content}`;
-//             messageElement.appendChild(timestampElement);
-
-//             // Toggle timestamp display on click
-//             messageElement.addEventListener('click', () => {
-//               timestampElement.style.display = timestampElement.style.display === 'none' ? 'block' : 'none';
-//             });
-
-//             chatContainer.appendChild(messageElement);
-
-//             // Update the lastMessageTimestamp to the most recent message's timestamp
-//             lastMessageTimestamp = new Date(msg.date_created).getTime() / 1000;
-//           });
-
-//           // Scroll to the bottom of the chatContainer
-//           chatContainer.scrollTop = chatContainer.scrollHeight;
-//         }
-
-//         // Start the next long poll request after a small delay
-//         setTimeout(fetchChatMessages, 2000);
-//       })
-//       .catch(error => {
-//         console.error('Error loading chat:', error);
-//         chatContainer.innerHTML = 'Error loading chat messages. Retrying...';
-//         setTimeout(fetchChatMessages, 2000); // Retry after 2 seconds
-//       });
-//   };
-
-//   // Start the first fetch
-//   fetchChatMessages();
-
-//   // Return a function to stop polling if needed
-//   return stopPolling;
-// }
-
-
-
-// // SEND BUTTON
-// document.getElementById('sendButton').addEventListener('click', () => {
-//   const contactInfo = document.getElementById('sendButton').getAttribute('data-contact-info');
-//   sendChat(contactInfo);
-//   console.log("SEND CLICKED", contactInfo);
-// });
-
-// function sendChat(contactInfo) {
-//   const messageInput = document.getElementById('messageInput');
-//   const message = messageInput.value.trim();
-
-//   if (message === '') {
-//     return;
-//   }
-
-//   const data = {
-//     content: message,
-//     contact_info: contactInfo
-//   };
-
-//   fetch('/sendChat', {
-//     method: 'POST',
-//     headers: {
-//       'Content-Type': 'application/json'
-//     },
-//     body: JSON.stringify(data)
-//   })
-//   .then(response => response.json())
-//   .then(result => {
-//     if (result.success) {
-//       messageInput.value = '';
-
-//       // Optionally, you can handle displaying the sent message here
-//       // Or it will be displayed when fetched in the next long poll
-//       console.log('Message sent successfully:', result);
-//     } else {
-//       console.error('Error sending message:', result.message);
-//     }
-//   })
-//   .catch(error => {
-//     console.error('Error:', error);
-//   });
-// }
   </script>
   
   <script>
@@ -700,3 +579,74 @@ function stopRecording() {
         }
     });
     </script>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const inputField = document.getElementById('username-input');
+    const suggestionsContainer = document.getElementById('suggestions');
+
+    inputField.addEventListener('input', async () => {
+        const query = inputField.value;
+
+        // Fetch users from the server based on the input query
+        try {
+            const response = await fetch(`/findUser?search=${encodeURIComponent(query)}`);
+            const users = await response.json();
+
+            // Clear previous suggestions
+            suggestionsContainer.innerHTML = '';
+
+            if (users.length === 0) {
+                suggestionsContainer.classList.add('invisible');
+            } else {
+                suggestionsContainer.classList.remove('invisible');
+
+                // Display new suggestions
+                users.forEach(user => {
+                    const suggestionItem = document.createElement('div');
+                    suggestionItem.textContent = user.username; // Adjust according to your user object structure
+                    suggestionItem.classList.add('suggestion-item');
+                    suggestionItem.addEventListener('click', () => {
+                        inputField.value = user.username;
+                        document.getElementById('sendButton').setAttribute('data-contact-info', user.user_id);
+                        suggestionsContainer.innerHTML = ''; // Clear suggestions after selection
+                        suggestionsContainer.classList.add('invisible');
+
+                        // Get the list of items
+                        const listItems = document.querySelectorAll('#chatList .list-group-item');
+
+                        // Loop through the list items
+                        listItems.forEach(item => {
+                          // Get the text of the current item
+                          const itemText = item.textContent.trim();
+
+                          // Check if the text matches the selected item
+                          if (itemText !== user.username) {
+                            console.log('Match found:', itemText);
+                            document.getElementById('chatContainer').innerHTML = '';
+                          }
+                        });
+
+                    });
+                    suggestionsContainer.appendChild(suggestionItem);
+                });
+            }
+        } catch (error) {
+            console.error('Error fetching users:', error);
+        }
+    });
+});
+  </script>
+  
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const newChatIcon = document.getElementById('newChat');
+        const chatContainer = document.getElementById('chatContainer');
+        const searchBar = document.getElementById('searchBar');
+
+        newChatIcon.addEventListener('click', () => {
+            chatContainer.innerHTML = '';
+            searchBar.classList.remove('d-none');
+        });
+    });
+</script>

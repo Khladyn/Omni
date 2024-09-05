@@ -16,37 +16,45 @@ const storage = multer.diskStorage({
 
 // Endpoint to fetch chat messages by chat ID
 const getChatById = async (req, res) => {
-    const contactInfo = req.params.id; // Assume the contactInfo is passed as a parameter
-    const sessionUserId = req.session.user.user_id; // Access the session user ID
-  
-    try {
-    const query = `
-        SELECT * 
-        FROM "INTERACTIONS" 
-        WHERE $1::text = ANY(contact_info)  -- Check if contactInfo is in the contact_info array
-        OR $1::integer = user_id           -- Check if contactInfo matches user_id
-        ORDER BY date_created ASC;         -- Sort by date_created from oldest to newest
+  const contactInfo = req.params.id; // Assume the contactInfo is passed as a parameter
+  const sessionUserId = req.session.user.user_id; // Access the session user ID
+  const lastMessageId = req.query.lastMessageId; // Get the lastMessageId from query parameters
+
+// console.log("SERVER_LAST: ", lastMessageId);
+
+  try {
+      const query = `
+          SELECT * 
+          FROM "INTERACTIONS" 
+          WHERE ($1::text = ANY(contact_info) OR $2::text = ANY(contact_info))
+          AND ($3::integer = user_id OR $4::integer = user_id)
+          ORDER BY date_created ASC;
       `;
-  
-      const result = await pool.query(query, [contactInfo]);
-  
+
+      const result = await pool.query(query, [contactInfo, sessionUserId, sessionUserId, contactInfo]);
+
       if (result.rows.length === 0) {
-        return res.status(404).json({ message: 'No records found for the given contact_info' });
+          return res.status(404).json({ message: 'No records found for the given contact_info' });
       }
-  
-      // Include the session user ID in the response
+
+      // Check if there are new messages
+      const newMessages = result.rows.length > 0
+          ? result.rows[result.rows.length - 1].interaction_id > lastMessageId
+          : false;
+
+      // Include the session user ID and newMessages status in the response
       res.json({
-        session_user_id: sessionUserId,
-        interactions: result.rows
+          session_user_id: sessionUserId,
+          interactions: result.rows,
+          newMessages: newMessages
       });
-  
-      console.log(result.rows);
-    } catch (err) {
+
+      // console.log(result.rows);
+  } catch (err) {
       console.error('Error fetching chat messages', err);
       res.status(500).json({ message: 'Error retrieving chat messages' });
-    }
-  };
-  
+  }
+};
 
 
   // Fetch and render the interactions page
@@ -97,8 +105,8 @@ const getChatById = async (req, res) => {
       const user_id = req.session.user.user_id; // Session user ID
       const files = req.files; // Array of uploaded files
   
-      console.log(req.body);
-      console.log(req.files);
+      // console.log(req.body);
+      // console.log(req.files);
   
       // Prepare file attachment paths if files exist
       const attachment = files.map(file => `/uploads/${file.filename}`);
@@ -124,8 +132,32 @@ const getChatById = async (req, res) => {
       }
     });
   };
-  
-  
+
+  const findUser = async (req, res) => {
+    const search = req.query.search || '';
+
+    try {
+        const result = await pool.query('SELECT user_id, username FROM "USERS" WHERE username ILIKE $1', [`%${search}%`]);
+
+        // Log the result to inspect its structure
+        console.log('Query result:', result);
+
+        // Ensure that result.rows is an array
+        if (Array.isArray(result.rows)) {
+            result.rows.forEach(user => {
+                // Process each user
+                console.log('User:', user);
+            });
+            res.json(result.rows);
+        } else {
+            console.error('Expected an array but got:', typeof result.rows);
+            res.status(500).json({ error: 'Unexpected data format' });
+        }
+    } catch (error) {
+        console.error('Error fetching users:', error);
+        res.status(500).json({ error: 'Internal Server Error' });
+    }
+};
   
   // Render the form for adding a user
 const renderEmail = (req, res) => {
@@ -157,5 +189,6 @@ const renderSms = (req, res) => {
     renderVoice,
     renderSms,
     getChatById,
-    sendChat
+    sendChat,
+    findUser
   };

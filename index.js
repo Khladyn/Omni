@@ -68,6 +68,7 @@ app.get('/delete/:id', isAuthenticated, userController.deleteUser);
 // Interaction management routes
 app.get('/chat/:id', isAuthenticated, interactionController.getChatById);
 app.post('/sendChat', isAuthenticated, interactionController.sendChat);
+app.get('/findUser', isAuthenticated, interactionController.findUser);
 app.get('/chat', isAuthenticated, interactionController.renderChat);
 app.get('/email', isAuthenticated, interactionController.renderEmail);
 app.get('/voice', isAuthenticated, interactionController.renderVoice);
